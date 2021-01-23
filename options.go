@@ -49,6 +49,7 @@ func defaultOptions() options {
 
 // Option interface is used to configure gormv2_logrus options.
 type Option interface {
+	apply(*options)
 }
 
 // funcOption wraps a function that modifies options into an
