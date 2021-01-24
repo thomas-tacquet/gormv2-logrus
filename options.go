@@ -17,8 +17,10 @@ import (
 // options are optional parameters that can be passed to init function of gormv2_logrus
 // to configure log policy.
 type options struct {
-	// pointer to your logrus instance
-	logrus *logrus.Entry
+	// pointer to your logrusEntry instance
+	logrusEntry *logrus.Entry
+
+	lr *logrus.Logger
 
 	// if set tO 0, nothing wil be truncated, else you can set it to the value you want to avoid
 	// logging too big SQL queries
@@ -40,7 +42,7 @@ type options struct {
 
 func defaultOptions() options {
 	return options{
-		logrus:         nil,
+		logrusEntry:    nil,
 		truncateLen:    0,
 		bannedKeywords: nil,
 		logLatency:     false,
@@ -70,11 +72,19 @@ func newGormLogOption(f func(*options)) *funcOption {
 	}
 }
 
-// WithNoWarden Option to specify your logrus instance. If you don't set a logrus isntance
-// or if your logrusInstance is nil, gormlog will consider that you want log to be printed on stdout.
+// WithLogrusEntry Option (not compatible with WithLogrus) used to specify your logrusEntry instance.
+// If you don't set a logrusEntry isntance or if your logrusInstance is nil, gormlog will consider
+// that you want log to be printed on stdout.
 // It's useful on developpement purposes when you want to see your logs directly in terminal.
-func WithLogrus(logrusInstance *logrus.Entry) Option {
+func WithLogrusEntry(logrusEntry *logrus.Entry) Option {
 	return newGormLogOption(func(o *options) {
-		o.logrus = logrusInstance
+		o.logrusEntry = logrusEntry
+	})
+}
+
+// WithLogrus Option is (not compatible with WithLogrusEntry) is used to specifiy your logrus isntance.
+func WithLogrus(lr *logrus.Logger) Option {
+	return newGormLogOption(func(o *options) {
+		o.lr = lr
 	})
 }

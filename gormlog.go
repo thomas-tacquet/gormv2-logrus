@@ -25,7 +25,7 @@ func New(opts ...Option) *gormlog {
 		opt.apply(&gl.opts)
 	}
 
-	return &gormlog{}
+	return gl
 }
 
 // LogMod implementation log mode
@@ -35,20 +35,32 @@ func (gl *gormlog) LogMode(logger.LogLevel) logger.Interface {
 
 // Info implementaiton of info log level
 func (gl *gormlog) Info(ctx context.Context, msg string, args ...interface{}) {
-	gl.opts.logrus.WithContext(ctx).Infof(msg, args...)
+	if gl.opts.lr != nil {
+		gl.opts.lr.WithContext(ctx).Infof(msg, args...)
+	}
+
+	if gl.opts.logrusEntry != nil {
+		gl.opts.logrusEntry.WithContext(ctx).Infof(msg, args...)
+	}
 }
 
 // Warn implementaiton of warn log level
 func (gl *gormlog) Warn(ctx context.Context, msg string, args ...interface{}) {
-	gl.opts.logrus.WithContext(ctx).Warnf(msg, args...)
+	gl.opts.logrusEntry.WithContext(ctx).Warnf(msg, args...)
 }
 
 // Error gormlog of error log level
 func (gl *gormlog) Error(ctx context.Context, msg string, args ...interface{}) {
-	gl.opts.logrus.WithContext(ctx).Errorf(msg, args...)
+	gl.opts.logrusEntry.WithContext(ctx).Errorf(msg, args...)
 }
 
 // Trace implementaiton of trace log level
 func (gl *gormlog) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
-	gl.opts.logrus.WithContext(ctx).Trace("trace test TODO")
+	if gl.opts.lr != nil {
+		gl.opts.lr.Error("trace test TODO")
+	}
+
+	if gl.opts.logrusEntry != nil {
+		gl.opts.logrusEntry.WithContext(ctx).Trace("trace test TODO")
+	}
 }
