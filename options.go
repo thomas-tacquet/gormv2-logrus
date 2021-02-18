@@ -1,4 +1,4 @@
-package gormv2_logrus
+package gormv2logrus
 
 import (
 	"time"
@@ -17,27 +17,27 @@ import (
 // options are optional parameters that can be passed to init function of gormv2_logrus
 // to configure log policy.
 type options struct {
+	// if a query contains one of bannedKeywords, it will not be logged, it's useful for preventing passwords and secrets
+	// for being logged.
+	bannedKeywords []string
+
 	// pointer to your logrusEntry instance
 	logrusEntry *logrus.Entry
 
 	lr *logrus.Logger
 
+	SlowThreshold time.Duration
+
+	LogLevel logger.LogLevel
+
 	// if set tO 0, nothing wil be truncated, else you can set it to the value you want to avoid
 	// logging too big SQL queries
 	truncateLen uint
 
-	// if a query contains one of bannedKeywords, it will not be logged, it's useful for preventing passwords and secrets
-	// for being logged.
-	bannedKeywords []string
-
 	// if set to true, it will add latency informations for your queries
 	logLatency bool
 
-	SlowThreshold time.Duration
-
 	Colorful bool
-
-	LogLevel logger.LogLevel
 }
 
 func defaultOptions() options {

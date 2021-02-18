@@ -1,4 +1,4 @@
-package gormv2_logrus_test
+package gormv2logrus_test
 
 import (
 	"testing"
@@ -9,7 +9,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	gormv2_logrus "github.com/thomas-tacquet/gormv2-logrus"
+	gormv2logrus "github.com/thomas-tacquet/gormv2-logrus"
 )
 
 func TestWithLogrus(t *testing.T) {
@@ -17,7 +17,7 @@ func TestWithLogrus(t *testing.T) {
 	logger, hook := test.NewNullLogger()
 
 	// create the gorm compatible logger with logrusEntry instance
-	gormLog := gormv2_logrus.New(gormv2_logrus.WithLogrus(logger))
+	gormLog := gormv2logrus.NewGormlog(gormv2logrus.WithLogrus(logger))
 
 	//
 	// open in memory database with previous logger
@@ -39,11 +39,9 @@ func TestWithLogrus(t *testing.T) {
 		assert.NoError(t, sqlDB.Close())
 	}()
 
-	type Lol struct {
-		in int
-	}
+	type Placeholder struct{}
 
-	_ = db.Create(&Lol{})
+	_ = db.Create(&Placeholder{})
 
 	assert.Equal(t, 1, len(hook.Entries))
 }
