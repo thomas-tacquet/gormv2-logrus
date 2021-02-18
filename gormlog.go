@@ -11,9 +11,9 @@ import (
 	"gorm.io/gorm/utils"
 )
 
-// gormlog must match gorm logger.Interface to be compatible with gorm.
-// gormlog can be assigned in gorm configuration (see example in README.md)
-type gormlog struct {
+// Gormlog must match gorm logger.Interface to be compatible with gorm.
+// Gormlog can be assigned in gorm configuration (see example in README.md).
+type Gormlog struct {
 	// SkipErrRecordNotFound if set to true, errors of type gorm.ErrRecordNotFound will be ignored.
 	SkipErrRecordNotFound bool
 
@@ -27,9 +27,9 @@ type gormlog struct {
 	opts options
 }
 
-// NewGormlog create an instance of
-func NewGormlog(opts ...Option) *gormlog {
-	gl := &gormlog{
+// NewGormlog create an instance of.
+func NewGormlog(opts ...Option) *Gormlog {
+	gl := &Gormlog{
 		opts: defaultOptions(),
 	}
 
@@ -40,13 +40,13 @@ func NewGormlog(opts ...Option) *gormlog {
 	return gl
 }
 
-// LogMod implementation log mode
-func (gl *gormlog) LogMode(logger.LogLevel) logger.Interface {
+// LogMod implementation log mode.
+func (gl *Gormlog) LogMode(logger.LogLevel) logger.Interface {
 	return gl
 }
 
 // Info implementaiton of info log level
-func (gl *gormlog) Info(ctx context.Context, msg string, args ...interface{}) {
+func (gl *Gormlog) Info(ctx context.Context, msg string, args ...interface{}) {
 	if gl.opts.lr != nil {
 		gl.opts.lr.WithContext(ctx).Infof(msg, args...)
 	}
@@ -57,7 +57,7 @@ func (gl *gormlog) Info(ctx context.Context, msg string, args ...interface{}) {
 }
 
 // Warn implementaiton of warn log level
-func (gl *gormlog) Warn(ctx context.Context, msg string, args ...interface{}) {
+func (gl *Gormlog) Warn(ctx context.Context, msg string, args ...interface{}) {
 	if gl.opts.lr != nil {
 		gl.opts.lr.WithContext(ctx).Warnf(msg, args...)
 	}
@@ -67,8 +67,8 @@ func (gl *gormlog) Warn(ctx context.Context, msg string, args ...interface{}) {
 	}
 }
 
-// Error gormlog of error log level
-func (gl *gormlog) Error(ctx context.Context, msg string, args ...interface{}) {
+// Error Gormlog of error log level
+func (gl *Gormlog) Error(ctx context.Context, msg string, args ...interface{}) {
 	if gl.opts.lr != nil {
 		gl.opts.lr.WithContext(ctx).Errorf(msg, args...)
 	}
@@ -79,7 +79,7 @@ func (gl *gormlog) Error(ctx context.Context, msg string, args ...interface{}) {
 }
 
 // Trace implementaiton of trace log level
-func (gl *gormlog) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
+func (gl *Gormlog) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
 	// retrive sql string
 	traceLog, _ := fc()
 

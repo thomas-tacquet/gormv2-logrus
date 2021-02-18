@@ -73,7 +73,7 @@ func newGormLogOption(f func(*options)) *funcOption {
 }
 
 // WithLogrusEntry Option (not compatible with WithLogrus) used to specify your logrusEntry instance.
-// If you don't set a logrusEntry isntance or if your logrusInstance is nil, gormlog will consider
+// If you don't set a logrusEntry isntance or if your logrusInstance is nil, Gormlog will consider
 // that you want log to be printed on stdout.
 // It's useful on developpement purposes when you want to see your logs directly in terminal.
 func WithLogrusEntry(logrusEntry *logrus.Entry) Option {
