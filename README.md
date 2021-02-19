@@ -28,3 +28,13 @@ func myFunctionToConnectOnMyDB(e *logrus.Entry) {
 	)
 }
 ```
+
+Or you can use with a logrus.Logger :
+
+```go
+gormLogger := gormv2logrus.NewGormlog(gormv2logrus.WithLogrus(e))
+```
+
+## Contibuting 
+
+Just feel free to open issues, ask questions, make proposals.

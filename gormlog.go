@@ -24,6 +24,8 @@ type Gormlog struct {
 	// SourceField if definied, source will appear in log with detailled file context.
 	SourceField string
 
+	LogLevel logger.LogLevel
+
 	opts options
 }
 
@@ -41,7 +43,9 @@ func NewGormlog(opts ...Option) *Gormlog {
 }
 
 // LogMod implementation log mode.
-func (gl *Gormlog) LogMode(logger.LogLevel) logger.Interface {
+func (gl *Gormlog) LogMode(ll logger.LogLevel) logger.Interface {
+	gl.LogLevel = ll
+
 	return gl
 }
 
@@ -113,11 +117,11 @@ func (gl *Gormlog) Trace(ctx context.Context, begin time.Time, fc func() (string
 
 	if gl.SlowThreshold != 0 && stopWatch > gl.SlowThreshold {
 		if gl.opts.lr != nil {
-			gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Warnf("%s [%s]", traceLog, stopWatch)
+			gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Warnf("SLOW SQL %s [%s]", traceLog, stopWatch)
 		}
 
 		if gl.opts.logrusEntry != nil {
-			gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Warnf("%s [%s]", traceLog, stopWatch)
+			gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Warnf("SLOW SQL %s [%s]", traceLog, stopWatch)
 		}
 
 		return
