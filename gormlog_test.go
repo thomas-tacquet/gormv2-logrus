@@ -1,6 +1,7 @@
 package gormv2logrus_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/sirupsen/logrus/hooks/test"
@@ -19,10 +20,8 @@ func TestWithLogrus(t *testing.T) {
 	// create the gorm compatible logger with logrusEntry instance
 	gormLog := gormv2logrus.NewGormlog(gormv2logrus.WithLogrus(logger))
 
-	//
-	// open in memory database with previous logger
 	db, err := gorm.Open(sqlite.Open(
-		"file:unit_test_01?mode=memory&cache=shared"),
+		generateTestingSqliteString(t)),
 		&gorm.Config{Logger: gormLog},
 	)
 
@@ -39,9 +38,30 @@ func TestWithLogrus(t *testing.T) {
 		assert.NoError(t, sqlDB.Close())
 	}()
 
-	type Placeholder struct{}
+	// NotExistingTable is a simple empty struct that does not exist in current database,
+	// so if we try to create a new entry of this struct, gorm must return an error
+	// telling us that this table does not exists
+	type NotExistingTable struct{}
 
-	_ = db.Create(&Placeholder{})
+	errCreate := db.Create(&NotExistingTable{}).Error
+	t.Log(errCreate.Error())
+
+	// testing gorm is not a purprose of this test, but to ensure consistency we
+	// must check if errCreate is not empty
+	require.NotEmpty(t, errCreate)
+	require.Contains(t, errCreate.Error(),"no such table")
+	require.Contains(t, errCreate.Error(),"not_existing_tables")
 
 	assert.Equal(t, 1, len(hook.Entries))
+	lastLogEntry := hook.LastEntry()
+
+	assert.Contains(t, lastLogEntry.Message, errCreate.Error())
+}
+
+func generateTestingSqliteString(t *testing.T) string {
+	t.Helper()
+
+	const sqliteConnString = "file:%s?mode=memory&cache=shared"
+
+	return fmt.Sprintf(sqliteConnString, t.Name())
 }
