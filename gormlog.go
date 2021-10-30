@@ -42,7 +42,7 @@ func NewGormlog(opts ...Option) *Gormlog {
 	return gl
 }
 
-// LogMod implementation log mode.
+// LogMode implementation log mode.
 func (gl *Gormlog) LogMode(ll logger.LogLevel) logger.Interface {
 	gl.LogLevel = ll
 
@@ -93,7 +93,7 @@ func (gl *Gormlog) Trace(ctx context.Context, begin time.Time, fc func() (string
 	// additional logrus fields
 	logrusFields := logrus.Fields{}
 
-	// if source field is definied, we retreive line number informations
+	// if source field is definied, we retreive line number information
 	if len(gl.SourceField) > 0 {
 		logrusFields[gl.SourceField] = utils.FileWithLineNum()
 	}
