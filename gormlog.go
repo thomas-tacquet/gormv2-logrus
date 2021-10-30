@@ -21,7 +21,7 @@ type Gormlog struct {
 	// it will be logged as warning.
 	SlowThreshold time.Duration
 
-	// SourceField if definied, source will appear in log with detailled file context.
+	// SourceField if definied, source will appear in log with detailed file context.
 	SourceField string
 
 	LogLevel logger.LogLevel
@@ -49,7 +49,7 @@ func (gl *Gormlog) LogMode(ll logger.LogLevel) logger.Interface {
 	return gl
 }
 
-// Info implementaiton of info log level
+// Info implementation of info log level
 func (gl *Gormlog) Info(ctx context.Context, msg string, args ...interface{}) {
 	if gl.opts.lr != nil {
 		gl.opts.lr.WithContext(ctx).Infof(msg, args...)
@@ -60,7 +60,7 @@ func (gl *Gormlog) Info(ctx context.Context, msg string, args ...interface{}) {
 	}
 }
 
-// Warn implementaiton of warn log level
+// Warn implementation of warn log level
 func (gl *Gormlog) Warn(ctx context.Context, msg string, args ...interface{}) {
 	if gl.opts.lr != nil {
 		gl.opts.lr.WithContext(ctx).Warnf(msg, args...)
@@ -82,9 +82,9 @@ func (gl *Gormlog) Error(ctx context.Context, msg string, args ...interface{}) {
 	}
 }
 
-// Trace implementaiton of trace log level
+// Trace implementation of trace log level
 func (gl *Gormlog) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
-	// retrive sql string
+	// retrieve sql string
 	traceLog, _ := fc()
 
 	// use begin to compute performances
@@ -93,7 +93,7 @@ func (gl *Gormlog) Trace(ctx context.Context, begin time.Time, fc func() (string
 	// additional logrus fields
 	logrusFields := logrus.Fields{}
 
-	// if source field is definied, we retreive line number information
+	// if source field is definied, we retrieve line number information
 	if len(gl.SourceField) > 0 {
 		logrusFields[gl.SourceField] = utils.FileWithLineNum()
 	}

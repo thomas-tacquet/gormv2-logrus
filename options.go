@@ -82,7 +82,7 @@ func WithLogrusEntry(logrusEntry *logrus.Entry) Option {
 	})
 }
 
-// WithLogrus Option is (not compatible with WithLogrusEntry) is used to specifiy your logrus isntance.
+// WithLogrus Option is (not compatible with WithLogrusEntry) is used to set your logrus isntance.
 func WithLogrus(lr *logrus.Logger) Option {
 	return newGormLogOption(func(o *options) {
 		o.lr = lr
