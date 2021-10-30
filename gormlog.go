@@ -3,6 +3,7 @@ package gormv2logrus
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -96,6 +97,20 @@ func (gl *Gormlog) Trace(ctx context.Context, begin time.Time, fc func() (string
 	// if source field is definied, we retrieve line number information
 	if len(gl.SourceField) > 0 {
 		logrusFields[gl.SourceField] = utils.FileWithLineNum()
+	}
+
+	// scanning for banned keywords
+	for idx := 0; idx < len(gl.opts.bannedKeywords); idx++ {
+		if gl.opts.bannedKeywords[idx].CaseMatters &&
+			strings.Contains(traceLog, gl.opts.bannedKeywords[idx].Keyword) {
+			return
+		} else if !gl.opts.bannedKeywords[idx].CaseMatters &&
+			strings.Contains(
+				strings.ToLower(traceLog),
+				strings.ToLower(gl.opts.bannedKeywords[idx].Keyword),
+			) {
+			return
+		}
 	}
 
 	// check if we have an error

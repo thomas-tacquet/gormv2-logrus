@@ -19,7 +19,7 @@ import (
 type options struct {
 	// if a query contains one of bannedKeywords, it will not be logged, it's useful for preventing passwords and secrets
 	// for being logged.
-	bannedKeywords []string
+	bannedKeywords []BannedKeyword
 
 	// pointer to your logrusEntry instance
 	logrusEntry *logrus.Entry
@@ -38,6 +38,15 @@ type options struct {
 	logLatency bool
 
 	Colorful bool
+}
+
+// BannedKeyword represents a rule for scanning for Keyword in log output.
+type BannedKeyword struct {
+	// Keyword represent the string watched, for example : "password"
+	Keyword string
+	// CaseMatters if set to false, the Keyword matching will occur depending the case.
+	// if set to true, Keyword will stricly match input messages
+	CaseMatters bool
 }
 
 func defaultOptions() options {
@@ -86,5 +95,11 @@ func WithLogrusEntry(logrusEntry *logrus.Entry) Option {
 func WithLogrus(lr *logrus.Logger) Option {
 	return newGormLogOption(func(o *options) {
 		o.lr = lr
+	})
+}
+
+func WithBannedKeyword(bannedKeywords []BannedKeyword) Option {
+	return newGormLogOption(func(o *options) {
+		o.bannedKeywords = bannedKeywords
 	})
 }
