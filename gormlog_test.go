@@ -30,7 +30,6 @@ func TestWithLogrus(t *testing.T) {
 	require.NotNil(t, db)
 
 	sqlDB, err := db.DB()
-
 	require.NoError(t, err)
 	require.NotNil(t, sqlDB)
 
@@ -49,13 +48,16 @@ func TestWithLogrus(t *testing.T) {
 	// testing gorm is not a purprose of this test, but to ensure consistency we
 	// must check if errCreate is not empty
 	require.NotEmpty(t, errCreate)
-	require.Contains(t, errCreate.Error(),"no such table")
-	require.Contains(t, errCreate.Error(),"not_existing_tables")
+	require.Contains(t, errCreate.Error(), "no such table")
+	require.Contains(t, errCreate.Error(), "not_existing_tables")
 
 	assert.Equal(t, 1, len(hook.Entries))
-	lastLogEntry := hook.LastEntry()
+	require.NotNil(t, hook.LastEntry())
 
-	assert.Contains(t, lastLogEntry.Message, errCreate.Error())
+	lastLogEntry, err := hook.LastEntry().String()
+	require.NoError(t, err)
+
+	assert.Contains(t, lastLogEntry, errCreate.Error())
 }
 
 func generateTestingSqliteString(t *testing.T) string {
