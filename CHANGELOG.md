@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.1.2
+### Fixed
+- upgrade dependencies (this is a maintenance release)
+
 ## 1.1.1
 ### Fixed
 - upgrade dependencies (this is a maintenance release)
