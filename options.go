@@ -49,6 +49,14 @@ type BannedKeyword struct {
 	CaseMatters bool
 }
 
+type GormOptions struct {
+	SlowThreshold time.Duration
+	LogLevel      logger.LogLevel
+	TruncateLen   uint
+	LogLatency    bool
+	Colorful      bool
+}
+
 func defaultOptions() options {
 	return options{
 		logrusEntry:    nil,
@@ -101,5 +109,14 @@ func WithLogrus(lr *logrus.Logger) Option {
 func WithBannedKeyword(bannedKeywords []BannedKeyword) Option {
 	return newGormLogOption(func(o *options) {
 		o.bannedKeywords = bannedKeywords
+	})
+}
+
+func WithGormOptions(gormOpt GormOptions) Option {
+	return newGormLogOption(func(o *options) {
+		o.Colorful = gormOpt.Colorful
+		o.logLatency = gormOpt.LogLatency
+		o.LogLevel = gormOpt.LogLevel
+		o.SlowThreshold = gormOpt.SlowThreshold
 	})
 }

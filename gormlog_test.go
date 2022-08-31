@@ -18,7 +18,10 @@ func TestWithLogrus(t *testing.T) {
 	logger, hook := test.NewNullLogger()
 
 	// create the gorm compatible logger with logrusEntry instance
-	gormLog := gormv2logrus.NewGormlog(gormv2logrus.WithLogrus(logger))
+	gormLog := gormv2logrus.NewGormlog(gormv2logrus.WithLogrus(logger),
+		gormv2logrus.WithGormOptions(gormv2logrus.GormOptions{
+			Colorful: true,
+		}))
 
 	db, err := gorm.Open(sqlite.Open(
 		generateTestingSqliteString(t)),
