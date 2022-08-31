@@ -1,4 +1,4 @@
-module github.com/thomas-tacquet/gormv2-logrus
+module github.com/FlorianRuen/gormv2-logrus
 
 go 1.18
 
