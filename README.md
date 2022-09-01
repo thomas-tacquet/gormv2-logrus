@@ -35,6 +35,24 @@ Or you can use with a logrus.Logger :
 gormLogger := gormv2logrus.NewGormlog(gormv2logrus.WithLogrus(e))
 ```
 
+You can also add customization options :
+
+```go
+	slowThresholdDuration, _ := time.ParseDuration("300ms")
+
+	gormLogger := gormv2logrus.NewGormlog(
+		gormv2logrus.WithLogrus(e),
+		gormv2logrus.WithGormOptions(
+			gormv2logrus.GormOptions{
+				Colorful:      true,
+				SlowThreshold: slowThresholdDuration,
+				LogLevel:      logger.Error,
+				LogLatency:    true,
+			},
+		),
+	)
+```
+
 ## Contibuting 
 
 Just feel free to open issues, ask questions, make proposals.
