@@ -49,6 +49,30 @@ type BannedKeyword struct {
 	CaseMatters bool
 }
 
+// Colors for Colorful option
+const (
+	Reset       = "\033[0m"
+	Red         = "\033[31m"
+	Green       = "\033[32m"
+	Yellow      = "\033[33m"
+	Blue        = "\033[34m"
+	Magenta     = "\033[35m"
+	Cyan        = "\033[36m"
+	White       = "\033[37m"
+	BlueBold    = "\033[34;1m"
+	MagentaBold = "\033[35;1m"
+	RedBold     = "\033[31;1m"
+	YellowBold  = "\033[33;1m"
+)
+
+type GormOptions struct {
+	SlowThreshold time.Duration
+	LogLevel      logger.LogLevel
+	TruncateLen   uint
+	LogLatency    bool
+	Colorful      bool
+}
+
 func defaultOptions() options {
 	return options{
 		logrusEntry:    nil,
@@ -101,5 +125,14 @@ func WithLogrus(lr *logrus.Logger) Option {
 func WithBannedKeyword(bannedKeywords []BannedKeyword) Option {
 	return newGormLogOption(func(o *options) {
 		o.bannedKeywords = bannedKeywords
+	})
+}
+
+func WithGormOptions(gormOpt GormOptions) Option {
+	return newGormLogOption(func(o *options) {
+		o.Colorful = gormOpt.Colorful
+		o.logLatency = gormOpt.LogLatency
+		o.LogLevel = gormOpt.LogLevel
+		o.SlowThreshold = gormOpt.SlowThreshold
 	})
 }
