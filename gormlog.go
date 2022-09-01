@@ -32,6 +32,7 @@ type Gormlog struct {
 
 // NewGormlog create an instance of.
 func NewGormlog(opts ...Option) *Gormlog {
+
 	gl := &Gormlog{
 		opts: defaultOptions(),
 	}
@@ -85,14 +86,20 @@ func (gl *Gormlog) Error(ctx context.Context, msg string, args ...interface{}) {
 
 // Trace implementation of trace log level
 func (gl *Gormlog) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
-	// retrieve sql string
-	traceLog, _ := fc()
+
+	// retrieve sql string and affected rows
+	traceLog, rows := fc()
 
 	// use begin to compute performances
 	stopWatch := time.Since(begin)
 
 	// additional logrus fields
 	logrusFields := logrus.Fields{}
+
+	// if logLatency is true, add stopWatch information
+	if gl.opts.logLatency {
+		logrusFields["duration"] = stopWatch
+	}
 
 	// if source field is definied, we retrieve line number information
 	if len(gl.SourceField) > 0 {
@@ -119,11 +126,30 @@ func (gl *Gormlog) Trace(ctx context.Context, begin time.Time, fc func() (string
 			logrusFields[logrus.ErrorKey] = err
 
 			if gl.opts.lr != nil {
-				gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Errorf("%s [%s]", traceLog, stopWatch)
+				if gl.opts.Colorful {
+					gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Errorf(
+						Magenta+"%s\n"+Reset+Red+"[error] "+"[%.3fms] ", traceLog,
+						float64(stopWatch.Nanoseconds())/1e6)
+
+				} else {
+					gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Errorf(
+						"%s\n [error] [%.3fms] ", traceLog,
+						float64(stopWatch.Nanoseconds())/1e6)
+				}
 			}
 
 			if gl.opts.logrusEntry != nil {
-				gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Errorf("%s [%s]", traceLog, stopWatch)
+
+				if gl.opts.Colorful {
+					gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Errorf(
+						Magenta+"%s\n"+Reset+Red+"[error] "+"[%.3fms] ", traceLog,
+						float64(stopWatch.Nanoseconds())/1e6)
+
+				} else {
+					gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Errorf(
+						"%s\n [error] [%.3fms] ", traceLog,
+						float64(stopWatch.Nanoseconds())/1e6)
+				}
 			}
 
 			return
@@ -132,21 +158,65 @@ func (gl *Gormlog) Trace(ctx context.Context, begin time.Time, fc func() (string
 
 	if gl.SlowThreshold != 0 && stopWatch > gl.SlowThreshold {
 		if gl.opts.lr != nil {
-			gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Warnf("SLOW SQL %s [%s]", traceLog, stopWatch)
+
+			if gl.opts.Colorful {
+				gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Warnf(
+					Green+"SLOW SQL %s\n"+Reset+RedBold+"[%.3fms] ", traceLog,
+					float64(stopWatch.Nanoseconds())/1e6)
+
+			} else {
+				gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Warnf(
+					"SLOW SQL %s\n [%.3fms]", traceLog, float64(stopWatch.Nanoseconds())/1e6)
+			}
+
 		}
 
 		if gl.opts.logrusEntry != nil {
-			gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Warnf("SLOW SQL %s [%s]", traceLog, stopWatch)
+
+			if gl.opts.Colorful {
+				gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Warnf(
+					Green+"SLOW SQL %s\n"+Reset+RedBold+"[%.3fms] ", traceLog,
+					float64(stopWatch.Nanoseconds())/1e6)
+
+			} else {
+				gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Warnf(
+					"SLOW SQL %s\n [%.3fms]", traceLog, float64(stopWatch.Nanoseconds())/1e6)
+			}
+
 		}
 
 		return
 	}
 
+	// Use directly with logrus entry
 	if gl.opts.lr != nil {
-		gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Debugf("%s [%s]", traceLog, stopWatch)
+
+		if gl.opts.Colorful {
+			gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Debugf(
+				Green+"%s\n"+Reset+Yellow+"[%.3fms] "+BlueBold+"[rows:%v]"+Reset, traceLog,
+				float64(stopWatch.Nanoseconds())/1e6, rows)
+
+		} else {
+			gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Debugf(
+				"%s\n [%.3fms] [rows:%v]", traceLog, float64(stopWatch.Nanoseconds())/1e6, rows)
+
+		}
+
 	}
 
+	// Use with logrusEntry
 	if gl.opts.logrusEntry != nil {
-		gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Debugf("%s [%s]", traceLog, stopWatch)
+
+		if gl.opts.Colorful {
+			gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Debugf(
+				Green+"%s\n"+Reset+Yellow+"[%.3fms] "+BlueBold+"[rows:%v]"+Reset, traceLog,
+				float64(stopWatch.Nanoseconds())/1e6, rows)
+
+		} else {
+			gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Debugf(
+				"%s\n [%.3fms] [rows:%v]", traceLog, float64(stopWatch.Nanoseconds())/1e6, rows)
+
+		}
+
 	}
 }
