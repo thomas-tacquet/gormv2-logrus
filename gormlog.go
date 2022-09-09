@@ -32,7 +32,6 @@ type Gormlog struct {
 
 // NewGormlog create an instance of.
 func NewGormlog(opts ...Option) *Gormlog {
-
 	gl := &Gormlog{
 		opts: defaultOptions(),
 	}
@@ -86,7 +85,6 @@ func (gl *Gormlog) Error(ctx context.Context, msg string, args ...interface{}) {
 
 // Trace implementation of trace log level
 func (gl *Gormlog) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
-
 	// retrieve sql string and affected rows
 	traceLog, rows := fc()
 
