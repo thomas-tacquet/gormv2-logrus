@@ -138,13 +138,18 @@ func (gl *Gormlog) Trace(ctx context.Context, begin time.Time, fc func() (string
 		}
 	}
 
-	if gl.SlowThreshold != 0 && stopWatch > gl.SlowThreshold {
+	if gl.opts.SlowThreshold != 0 && stopWatch > gl.opts.SlowThreshold && gl.opts.LogLevel >= logger.Warn {
+
+		// instead of adding SLOW SQL to the message, add reason field
+		// this can be parsed easily with logs management tools
+		logrusFields["reason"] = "SLOW SQL"
+
 		if gl.opts.lr != nil {
-			gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Warnf("SLOW SQL %s", traceLog)
+			gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Warnf("%s", traceLog)
 		}
 
 		if gl.opts.logrusEntry != nil {
-			gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Warnf("SLOW SQL %s", traceLog)
+			gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Warnf("%s", traceLog)
 		}
 
 		return
