@@ -44,7 +44,6 @@ You can also add customization options :
 		gormv2logrus.WithLogrus(e),
 		gormv2logrus.WithGormOptions(
 			gormv2logrus.GormOptions{
-				Colorful:      true,
 				SlowThreshold: slowThresholdDuration,
 				LogLevel:      logger.Error,
 				LogLatency:    true,
@@ -52,6 +51,8 @@ You can also add customization options :
 		),
 	)
 ```
+
+> Colorful option has been removed, because Logrus can't really handle the color code, especially if the logs are redirected to a file, the characters are not removed automatically
 
 ## Contibuting 
 
