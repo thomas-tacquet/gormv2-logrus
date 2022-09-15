@@ -99,6 +99,9 @@ func (gl *Gormlog) Trace(ctx context.Context, begin time.Time, fc func() (string
 		logrusFields["duration"] = stopWatch
 	}
 
+	// add number of affected rows as logrus parameter
+	logrusFields["rows"] = rows
+
 	// if source field is definied, we retrieve line number information
 	if len(gl.SourceField) > 0 {
 		logrusFields[gl.SourceField] = utils.FileWithLineNum()
@@ -124,54 +127,29 @@ func (gl *Gormlog) Trace(ctx context.Context, begin time.Time, fc func() (string
 			logrusFields[logrus.ErrorKey] = err
 
 			if gl.opts.lr != nil {
-				if gl.opts.Colorful {
-					gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Errorf(
-						Magenta+"%s\n"+Reset+Red+"[error] "+"[%.3fms] ", traceLog,
-						float64(stopWatch.Nanoseconds())/1e6)
-				} else {
-					gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Errorf(
-						"%s\n [error] [%.3fms] ", traceLog,
-						float64(stopWatch.Nanoseconds())/1e6)
-				}
+				gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Errorf("%s", traceLog)
 			}
 
 			if gl.opts.logrusEntry != nil {
-				if gl.opts.Colorful {
-					gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Errorf(
-						Magenta+"%s\n"+Reset+Red+"[error] "+"[%.3fms] ", traceLog,
-						float64(stopWatch.Nanoseconds())/1e6)
-				} else {
-					gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Errorf(
-						"%s\n [error] [%.3fms] ", traceLog,
-						float64(stopWatch.Nanoseconds())/1e6)
-				}
+				gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Errorf("%s", traceLog)
 			}
 
 			return
 		}
 	}
 
-	if gl.SlowThreshold != 0 && stopWatch > gl.SlowThreshold {
+	if gl.opts.SlowThreshold != 0 && stopWatch > gl.opts.SlowThreshold && gl.opts.LogLevel >= logger.Warn {
+
+		// instead of adding SLOW SQL to the message, add reason field
+		// this can be parsed easily with logs management tools
+		logrusFields["reason"] = "SLOW SQL"
+
 		if gl.opts.lr != nil {
-			if gl.opts.Colorful {
-				gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Warnf(
-					Green+"SLOW SQL %s\n"+Reset+RedBold+"[%.3fms] ", traceLog,
-					float64(stopWatch.Nanoseconds())/1e6)
-			} else {
-				gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Warnf(
-					"SLOW SQL %s\n [%.3fms]", traceLog, float64(stopWatch.Nanoseconds())/1e6)
-			}
+			gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Warnf("%s", traceLog)
 		}
 
 		if gl.opts.logrusEntry != nil {
-			if gl.opts.Colorful {
-				gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Warnf(
-					Green+"SLOW SQL %s\n"+Reset+RedBold+"[%.3fms] ", traceLog,
-					float64(stopWatch.Nanoseconds())/1e6)
-			} else {
-				gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Warnf(
-					"SLOW SQL %s\n [%.3fms]", traceLog, float64(stopWatch.Nanoseconds())/1e6)
-			}
+			gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Warnf("%s", traceLog)
 		}
 
 		return
@@ -179,25 +157,11 @@ func (gl *Gormlog) Trace(ctx context.Context, begin time.Time, fc func() (string
 
 	// Use directly with logrus entry
 	if gl.opts.lr != nil {
-		if gl.opts.Colorful {
-			gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Debugf(
-				Green+"%s\n"+Reset+Yellow+"[%.3fms] "+BlueBold+"[rows:%v]"+Reset, traceLog,
-				float64(stopWatch.Nanoseconds())/1e6, rows)
-		} else {
-			gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Debugf(
-				"%s\n [%.3fms] [rows:%v]", traceLog, float64(stopWatch.Nanoseconds())/1e6, rows)
-		}
+		gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Debugf("%s", traceLog)
 	}
 
 	// Use with logrusEntry
 	if gl.opts.logrusEntry != nil {
-		if gl.opts.Colorful {
-			gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Debugf(
-				Green+"%s\n"+Reset+Yellow+"[%.3fms] "+BlueBold+"[rows:%v]"+Reset, traceLog,
-				float64(stopWatch.Nanoseconds())/1e6, rows)
-		} else {
-			gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Debugf(
-				"%s\n [%.3fms] [rows:%v]", traceLog, float64(stopWatch.Nanoseconds())/1e6, rows)
-		}
+		gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Debugf("%s", traceLog)
 	}
 }
