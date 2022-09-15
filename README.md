@@ -1,7 +1,8 @@
 # gormv2-logrus
+
 Easily connect Gorm V2 and logrus with customizable options
 
-Usage example : 
+Usage example :
 
 ```go
 package test
@@ -21,7 +22,7 @@ func myFunctionToConnectOnMyDB(e *logrus.Entry) {
 		CreateBatchSize:        1500,
 		SkipDefaultTransaction: true,
 	}
-	
+
 	db, err := gorm.Open(
 		"CONNEXION STRING",
 		gormConfig,
@@ -54,6 +55,6 @@ You can also add customization options :
 
 > Colorful option has been removed, because Logrus can't really handle the color code, especially if the logs are redirected to a file, the characters are not removed automatically
 
-## Contibuting 
+## Contibuting
 
 Just feel free to open issues, ask questions, make proposals.
