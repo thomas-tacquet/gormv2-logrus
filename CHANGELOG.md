@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.2.3
+
+### Fixed
+
+- upgrade dependencies (this is a maintenance release)
+
 ## 1.2.2
 
 ### Fixed
