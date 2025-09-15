@@ -12,25 +12,31 @@ import (
 	"gorm.io/gorm/utils"
 )
 
-// Gormlog must match gorm logger.Interface to be compatible with gorm.
-// Gormlog can be assigned in gorm configuration (see example in README.md).
+// Gormlog implements the gorm logger.Interface, making it compatible with GORM v2.
+// It can be assigned in the GORM configuration (see example in README.md).
+//
+// This logger uses Logrus for logging and supports configurable levels, slow query thresholds,
+// and optional source code location tracking.
 type Gormlog struct {
-	// SkipErrRecordNotFound if set to true, errors of type gorm.ErrRecordNotFound will be ignored.
+	// SkipErrRecordNotFound, when set to true, suppresses logging of gorm.ErrRecordNotFound errors.
 	SkipErrRecordNotFound bool
 
-	// SlowThreshold is used to determine a limit of slow requests, if a request time is above SlowThreshold,
-	// it will be logged as warning.
+	// SlowThreshold defines the duration beyond which a query is considered "slow"
+	// and will be logged as a warning.
 	SlowThreshold time.Duration
 
-	// SourceField if definied, source will appear in log with detailed file context.
+	// SourceField, if specified, enables logging of the file and line number
+	// where the log entry originated. The value will be used as the field name in the log.
 	SourceField string
 
+	// LogLevel sets the minimum log level for messages to be logged.
 	LogLevel logger.LogLevel
 
 	opts options
 }
 
-// NewGormlog create an instance of.
+// NewGormlog creates and returns a new instance of Gormlog with the provided options.
+// If no options are given, default values are used.
 func NewGormlog(opts ...Option) *Gormlog {
 	gl := &Gormlog{
 		opts: defaultOptions(),
@@ -43,14 +49,16 @@ func NewGormlog(opts ...Option) *Gormlog {
 	return gl
 }
 
-// LogMode implementation log mode.
+// LogMode sets the logging level for the Gormlog instance.
+// It returns a new logger interface with the specified log level.
 func (gl *Gormlog) LogMode(ll logger.LogLevel) logger.Interface {
 	gl.LogLevel = ll
 
 	return gl
 }
 
-// Info implementation of info log level
+// Info logs an informational message using the configured Logrus logger.
+// It accepts a context, a format string, and optional arguments.
 func (gl *Gormlog) Info(ctx context.Context, msg string, args ...interface{}) {
 	if gl.opts.lr != nil {
 		gl.opts.lr.WithContext(ctx).Infof(msg, args...)
@@ -61,7 +69,8 @@ func (gl *Gormlog) Info(ctx context.Context, msg string, args ...interface{}) {
 	}
 }
 
-// Warn implementation of warn log level
+// Warn logs a warning message using the configured Logrus logger.
+// It accepts a context, a format string, and optional arguments.
 func (gl *Gormlog) Warn(ctx context.Context, msg string, args ...interface{}) {
 	if gl.opts.lr != nil {
 		gl.opts.lr.WithContext(ctx).Warnf(msg, args...)
@@ -72,7 +81,8 @@ func (gl *Gormlog) Warn(ctx context.Context, msg string, args ...interface{}) {
 	}
 }
 
-// Error Gormlog of error log level
+// Error logs an error message using the configured Logrus logger.
+// It accepts a context, a format string, and optional arguments.
 func (gl *Gormlog) Error(ctx context.Context, msg string, args ...interface{}) {
 	if gl.opts.lr != nil {
 		gl.opts.lr.WithContext(ctx).Errorf(msg, args...)
@@ -83,7 +93,7 @@ func (gl *Gormlog) Error(ctx context.Context, msg string, args ...interface{}) {
 	}
 }
 
-// Trace implementation of trace log level
+// Trace implementation of trace log level.
 func (gl *Gormlog) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
 	// retrieve sql string and affected rows
 	traceLog, rows := fc()
@@ -108,38 +118,30 @@ func (gl *Gormlog) Trace(ctx context.Context, begin time.Time, fc func() (string
 	}
 
 	// scanning for banned keywords
-	for idx := 0; idx < len(gl.opts.bannedKeywords); idx++ {
-		if gl.opts.bannedKeywords[idx].CaseMatters &&
-			strings.Contains(traceLog, gl.opts.bannedKeywords[idx].Keyword) {
+	for i := range int(len(gl.opts.bannedKeywords)) {
+		keyword := gl.opts.bannedKeywords[i]
+		if keyword.CaseMatters && strings.Contains(traceLog, keyword.Keyword) {
 			return
-		} else if !gl.opts.bannedKeywords[idx].CaseMatters &&
-			strings.Contains(
-				strings.ToLower(traceLog),
-				strings.ToLower(gl.opts.bannedKeywords[idx].Keyword),
-			) {
+		} else if !keyword.CaseMatters &&
+			strings.Contains(strings.ToLower(traceLog), strings.ToLower(keyword.Keyword)) {
 			return
 		}
 	}
 
 	// check if we have an error
-	if err != nil {
-		if !(errors.Is(err, gorm.ErrRecordNotFound) && gl.SkipErrRecordNotFound) {
-			logrusFields[logrus.ErrorKey] = err
+	if err != nil && !(errors.Is(err, gorm.ErrRecordNotFound) && gl.SkipErrRecordNotFound) {
+		logrusFields[logrus.ErrorKey] = err
 
-			if gl.opts.lr != nil {
-				gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Errorf("%s", traceLog)
-			}
+		if gl.opts.lr != nil {
+			gl.opts.lr.WithContext(ctx).WithFields(logrusFields).Errorf("%s", traceLog)
+		}
 
-			if gl.opts.logrusEntry != nil {
-				gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Errorf("%s", traceLog)
-			}
-
-			return
+		if gl.opts.logrusEntry != nil {
+			gl.opts.logrusEntry.WithContext(ctx).WithFields(logrusFields).Errorf("%s", traceLog)
 		}
 	}
 
 	if gl.opts.SlowThreshold != 0 && stopWatch > gl.opts.SlowThreshold && gl.opts.LogLevel >= logger.Warn {
-
 		// instead of adding SLOW SQL to the message, add reason field
 		// this can be parsed easily with logs management tools
 		logrusFields["reason"] = "SLOW SQL"

@@ -47,11 +47,11 @@ func TestWithLogrus(t *testing.T) {
 
 	// testing gorm is not a purprose of this test, but to ensure consistency we
 	// must check if errCreate is not empty
-	require.NotEmpty(t, errCreate)
+	require.Error(t, errCreate)
 	require.Contains(t, errCreate.Error(), "no such table")
 	require.Contains(t, errCreate.Error(), "not_existing_tables")
 
-	assert.Equal(t, 1, len(hook.Entries))
+	assert.Len(t, hook.Entries, 1)
 	require.NotNil(t, hook.LastEntry())
 
 	lastLogEntry, err := hook.LastEntry().String()
