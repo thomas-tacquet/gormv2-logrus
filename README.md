@@ -1,8 +1,8 @@
 # gormv2-logrus
 
-Easily connect Gorm V2 and logrus with customizable options
+Easily connect Gorm V2 and logrus with customizable options.
 
-Usage example :
+Usage example:
 
 ```go
 package test
@@ -30,13 +30,13 @@ func myFunctionToConnectOnMyDB(e *logrus.Entry) {
 }
 ```
 
-Or you can use with a logrus.Logger :
+Or you can use it with a `logrus.Logger`:
 
 ```go
 gormLogger := gormv2logrus.NewGormlog(gormv2logrus.WithLogrus(e))
 ```
 
-You can also add customization options :
+You can also add customization options:
 
 ```go
 	slowThresholdDuration, _ := time.ParseDuration("300ms")
@@ -53,8 +53,8 @@ You can also add customization options :
 	)
 ```
 
-> Colorful option has been removed, because Logrus can't really handle the color code, especially if the logs are redirected to a file, the characters are not removed automatically
+> The colorful option has been removed because Logrus cannot properly handle color codes, especially when logs are redirected to a file—the color characters are not automatically stripped.
 
-## Contibuting
+## Contributing
 
-Just feel free to open issues, ask questions, make proposals.
+Feel free to open issues, ask questions, or make proposals.

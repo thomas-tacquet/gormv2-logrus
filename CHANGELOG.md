@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.2.4
+
+### Fixed
+
+- Upgrade go version to 1.25
+- Use of more modern go features
+- Add lot of documentation
+
 ## 1.2.3
 
 ### Fixed
